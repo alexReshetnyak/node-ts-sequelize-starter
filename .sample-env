@@ -1,0 +1,19 @@
+#can be 'development' or 'production'
+NODE_ENV=
+
+#app port
+PORT=
+
+#mongo connection options
+MONGODB_URI=
+MONGODB_DB_MAIN=
+
+#mon connection options
+PG_DB=
+PG_PORT=
+PG_HOST=
+PG_USER=
+PG_PASSWD=
+
+#secret word
+SECRET=
