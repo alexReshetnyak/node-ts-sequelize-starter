@@ -48,7 +48,22 @@ class AuthValidation extends Validation {
     });
 
     return Joi.validate(params, schema);
-  } 
+  }
+
+  /**
+   * @param {{refreshToken: string}} params
+   * @returns {Joi.ValidationResult<{refreshToken: string}>}
+   * @memberof UserValidation
+   */
+  getDbRefreshToken(
+    params: { refreshToken: string }
+  ): Joi.ValidationResult<{refreshToken: string}> {
+    const schema: Joi.Schema = Joi.object().keys({
+      refreshToken: Joi.string().required(),
+    });
+
+    return Joi.validate(params, schema);
+  }
 }
 
 export default new AuthValidation();

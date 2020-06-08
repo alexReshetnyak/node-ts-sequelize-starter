@@ -8,7 +8,7 @@ const router: Router = Router();
 
 /**
  * POST method route
- * @example http://localhost:PORT/signup
+ * @example http://localhost:PORT/auth/signup
  * @swagger
  * /auth/signup/:
  *  post:
@@ -47,7 +47,7 @@ router.post('/signup', AuthComponent.signup);
 
 /**
  * POST method route
- * @example http://localhost:PORT/login
+ * @example http://localhost:PORT/auth/login
  * 
  * @swagger
  * /auth/login/:
@@ -84,6 +84,42 @@ router.post('/signup', AuthComponent.signup);
  */
 router.post('/login', AuthComponent.login);
 
+
+/**
+ * POST method route
+ * @example http://localhost:PORT/auth/refresh-token
+ * 
+ * @swagger
+ * /auth/refresh-token/:
+ *  post:
+ *    description: Refresh tokens
+ *    tags: ["auth"]
+ *    requestBody:
+ *      description: refresh token body
+ *      required: true
+ *      content:
+ *        application/json:
+ *          example:
+ *            refreshToken: some-token
+ *    responses:
+ *      200:
+ *        description: token successfully updated
+ *        content:
+ *          application/json:
+ *            example:
+ *              status: 200
+ *              logged: true
+ *              message: Refresh token updated!
+ *      400:
+ *        description: Token not updated
+ *        content:
+ *          application/json:
+ *            example:
+ *              status: 400
+ *              logged: false
+ *              message: Invalid token
+ */
+router.post('/refresh-token', AuthComponent.refreshToken);
 
 /**
  * @export {express.Router}

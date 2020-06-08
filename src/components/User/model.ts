@@ -3,7 +3,16 @@ import * as crypto from 'crypto';
 import * as _ from 'lodash';
 
 import { sequelize } from '../../config/connection/connection';
-import { Model, DataTypes, FindOptions } from 'sequelize';
+import { 
+  Model, 
+  DataTypes, 
+  FindOptions, 
+  HasOneGetAssociationMixin,
+  HasOneCreateAssociationMixin,
+  HasOneSetAssociationMixin,
+  Association,
+} from 'sequelize';
+import { Token } from '../Auth/model';
 
 /**
  * @export
@@ -45,6 +54,10 @@ export { User };
  *          type: string
  *          format: date
  *          example: date
+ *        tokens:
+ *          type: array
+ *          items:
+ *            $ref: '#/components/schemas/Token'
  *    Users:
  *      type: array
  *      items:
@@ -59,6 +72,15 @@ class User extends Model {
 
   public readonly created_at: Date;
   public readonly updated_at: Date;
+  public readonly tokens?: Token[];
+
+  public getToken: HasOneGetAssociationMixin<Token>;
+  public setToken: HasOneSetAssociationMixin<Token, number>;
+  public createToken: HasOneCreateAssociationMixin<Token>;
+
+  public static associations: {
+    tokens: Association<User, Token>;
+  };
 
   /**
    * Method for comparing passwords
@@ -86,18 +108,18 @@ class User extends Model {
   };
 
   /**
-   * Excludes password from query
+   * Excludes password and token_id from query
    */
   static findAllWithoutPass(options?: FindOptions): Promise<any> {
-    const params = _.merge({ attributes: { exclude: ['password'] } },  options || {});
+    const params = _.merge({ attributes: { exclude: ['password', 'token_id'] } },  options || {});
     return this.findAll(params);
   }
 
   /**
-   * Excludes password from query
+   * Excludes password and token_id from query
    */
   static findByPkWithoutPass(id: number, options?: FindOptions): Promise<any> {
-    const params = _.merge({ attributes: { exclude: ['password'] } },  options || {});
+    const params = _.merge({ attributes: { exclude: ['password', 'token_id'] } },  options || {});
     return this.findByPk(id, params);
   }
 }
@@ -130,9 +152,17 @@ User.init({
 
       this.setDataValue('password', hash);
     },
-  }
+  },
+  token_id: {
+    type: DataTypes.UUID,
+  },
 }, {
   tableName: 'users',
   sequelize,
 });
 
+User.hasOne(Token, {
+  sourceKey: 'id',
+  foreignKey: 'user_id',
+  as: 'token',
+});
