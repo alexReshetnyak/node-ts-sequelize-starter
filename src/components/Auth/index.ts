@@ -4,6 +4,8 @@ import * as jwt from 'jsonwebtoken';
 import AuthService from './service';
 import HttpError from '../../config/error';
 import { User } from '../User/model';
+import { Tokens } from './interface';
+import { Token } from './model';
 
 /**
  * @export
@@ -12,17 +14,19 @@ import { User } from '../User/model';
  * @param {NextFunction} next 
  * @returns {Promise<void>}
  */
-export async function signup(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function signup(
+  req: Request, res: Response, next: NextFunction
+): Promise<void> {
   try {
     const user: User = await AuthService.createUser(req.body);
-    const { token, refreshToken } = await AuthService.updateTokens(user);
+    const { token, refreshToken }: Tokens = await AuthService.updateTokens(user);
     
     res.json({
-      status: 200,
-      logged: true,
       token,
       refreshToken,
-      message: 'Sign in successfull'
+      status: 200,
+      logged: true,
+      message: 'Sign up successfull'
     });
   } catch (error) {
     if (error.code === 500) {
@@ -42,16 +46,18 @@ export async function signup(req: Request, res: Response, next: NextFunction): P
  * @param {NextFunction} next
  * @returns {Promise<void>}
  */
-export async function login(req: Request, res: Response, next: NextFunction): Promise<void> {
+export async function login(
+  req: Request, res: Response, next: NextFunction
+): Promise<void> {
   try {
     const user: User = await AuthService.getUser(req.body);
-    const { token, refreshToken } = await AuthService.updateTokens(user);
+    const { token, refreshToken }: Tokens = await AuthService.updateTokens(user);
     
     res.json({
-      status: 200,
-      logged: true,
       token,
       refreshToken,
+      status: 200,
+      logged: true,
       message: 'Sign in successfull'
     });
 
@@ -77,15 +83,18 @@ export async function refreshToken(
   req: Request, res: Response, next: NextFunction
 ): Promise<void> {
   try {
-    const oldToken = await AuthService.getDbRefreshToken(req.body);
-    const user = await User.findByPkWithoutPass(+oldToken.user_id);
-    const { token, refreshToken } = await AuthService.updateTokens(user);
+    const oldToken: Token = await AuthService.getDbRefreshToken(req.body);
+
+    if (!oldToken) throw new HttpError(400, 'Invalid token!');
+
+    const user: User = await User.findByPkWithoutPass(+oldToken.user_id);
+    const { token, refreshToken }: Tokens = await AuthService.updateTokens(user);
 
     res.json({
-      status: 200,
-      logged: true,
       token,
       refreshToken,
+      status: 200,
+      logged: true,
       message: 'Token was updated'
     });
   } catch (error) {
@@ -100,4 +109,3 @@ export async function refreshToken(
     next(new HttpError(error.message.status, error.message));
   }
 }
-

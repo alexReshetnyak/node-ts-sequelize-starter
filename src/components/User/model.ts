@@ -10,9 +10,9 @@ import {
   HasOneGetAssociationMixin,
   HasOneCreateAssociationMixin,
   HasOneSetAssociationMixin,
-  Association,
 } from 'sequelize';
 import { Token } from '../Auth/model';
+import { UserFindOptions } from './interface';
 
 /**
  * @export
@@ -72,15 +72,14 @@ class User extends Model {
 
   public readonly created_at: Date;
   public readonly updated_at: Date;
-  public readonly tokens?: Token[];
 
   public getToken: HasOneGetAssociationMixin<Token>;
   public setToken: HasOneSetAssociationMixin<Token, number>;
   public createToken: HasOneCreateAssociationMixin<Token>;
 
-  public static associations: {
-    tokens: Association<User, Token>;
-  };
+  // public static associations: {
+  //   token: Association<User, Token>;
+  // };
 
   /**
    * Method for comparing passwords
@@ -93,7 +92,7 @@ class User extends Model {
     } catch (error) {
       return error;
     }
-  };
+  }
   
   /**
    * Helper method for getting user's gravatar.
@@ -105,21 +104,29 @@ class User extends Model {
     const md5: string = crypto.createHash('md5').update(this.email).digest('hex');
   
     return `https://gravatar.com/avatar/${md5}?s=${size}&d=retro`;
-  };
+  }
 
   /**
    * Excludes password and token_id from query
    */
-  static findAllWithoutPass(options?: FindOptions): Promise<any> {
-    const params = _.merge({ attributes: { exclude: ['password', 'token_id'] } },  options || {});
+  static findAllWithoutPass(options?: FindOptions): Promise<User[]> {
+    const params: UserFindOptions = _.merge(
+      { attributes: { exclude: ['password', 'token_id'] } },  
+      options || {}
+    );
+    
     return this.findAll(params);
   }
 
   /**
    * Excludes password and token_id from query
    */
-  static findByPkWithoutPass(id: number, options?: FindOptions): Promise<any> {
-    const params = _.merge({ attributes: { exclude: ['password', 'token_id'] } },  options || {});
+  static findByPkWithoutPass(id: number, options?: FindOptions): Promise<User> {
+    const params: UserFindOptions = _.merge(
+      { attributes: { exclude: ['password', 'token_id'] } },  
+      options || {}
+    );
+
     return this.findByPk(id, params);
   }
 }
@@ -146,19 +153,16 @@ User.init({
   },
   password: {
     type: DataTypes.STRING,
-    set: function (val) {
-      const salt = bcrypt.genSaltSync(10);
-      const hash = bcrypt.hashSync(val, salt);
+    set(val: string): void {
+      const salt: string = bcrypt.genSaltSync(10);
+      const hash: string = bcrypt.hashSync(val, salt);
 
       this.setDataValue('password', hash);
     },
-  },
-  token_id: {
-    type: DataTypes.UUID,
-  },
+  }
 }, {
-  tableName: 'users',
   sequelize,
+  tableName: 'users',
 });
 
 User.hasOne(Token, {

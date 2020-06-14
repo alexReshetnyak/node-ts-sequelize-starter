@@ -56,3 +56,13 @@ export interface Tokens {
   token: string; 
   refreshToken: string;
 }
+
+
+/**
+ * @export
+ * @interface RefreshToken
+ */
+export interface RefreshToken {
+  id: string; 
+  token: string;
+}

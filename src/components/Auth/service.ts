@@ -5,12 +5,12 @@ import { v4 as uuid } from 'uuid';
 import AuthValidation from './validation';
 import HttpError from '../../config/error';
 import app from '../../config/server/server';
-import { IAuthService, Tokens } from './interface';
+import { IAuthService, Tokens, RefreshToken } from './interface';
 import { User } from '../User/model';
 import { Token } from './model';
 
-const ACCESS_TOKEN_EXPIRES_IN = "30m";
-const REFRESH_TOKEN_EXPIRES_IN = "1w";
+const ACCESS_TOKEN_EXPIRES_IN: string = '30m';
+const REFRESH_TOKEN_EXPIRES_IN: string = '1w';
 
 /**
  * @export
@@ -33,7 +33,7 @@ const AuthService: IAuthService = {
         where: { email: body.email }
       });
 
-      if (userWithSuchEmail) throw new HttpError(400, "This email already exists");
+      if (userWithSuchEmail) throw new HttpError(400, 'This email already exists');
 
       const createdUser: User = await User.create(body);
 
@@ -80,7 +80,7 @@ const AuthService: IAuthService = {
 
     if (validate.error) throw new Error(validate.error.message);
 
-    const payload = <
+    const payload: {id: string, type: string} = <
       {id: string, type: string}
     >jwt.verify(body.refreshToken, app.get('secret'));
     
@@ -95,10 +95,14 @@ const AuthService: IAuthService = {
    * @memberof AuthService
    */
   async updateTokens(user: User): Promise<Tokens> {
-    const token = this.generateAccessToken({ email: user.email });
-    const { id: tokenId, token: refreshToken } = this.generateRefreshToken();
+    const token: string = this.generateAccessToken({ email: user.email });
+    const { 
+      id: tokenId, 
+      token: refreshToken 
+    }: RefreshToken = this.generateRefreshToken();
 
     await user.createToken({ token_id: tokenId });
+    
     return { token, refreshToken };
   },
 
@@ -110,7 +114,7 @@ const AuthService: IAuthService = {
    */
   generateAccessToken(payload: { email: string }): string {
     return jwt.sign(
-      {...payload, type: 'access'}, 
+      { ...payload, type: 'access' }, 
       app.get('secret'), 
       { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
     );
@@ -121,13 +125,14 @@ const AuthService: IAuthService = {
    * @returns {{id: string, token: string}}
    * @memberof AuthService
    */
-  generateRefreshToken(): {id: string, token: string} {
-    const id = uuid();
-    const token = jwt.sign(
+  generateRefreshToken(): RefreshToken {
+    const id: string = uuid();
+    const token: string = jwt.sign(
       { id, type: 'refresh' }, 
       app.get('secret'), 
       { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
     );
+
     return { id, token };
   },
 };

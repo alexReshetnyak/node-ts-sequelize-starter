@@ -67,7 +67,9 @@ const UserSchema: Schema = new Schema({
 /**
  * Method for comparing passwords
  */
-UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise < boolean > {
+UserSchema.methods.comparePassword = async function (
+  candidatePassword: string
+): Promise<boolean> {
   try {
     const match: boolean = await bcrypt.compare(candidatePassword, this.password);
 

@@ -1,4 +1,5 @@
 import { User } from './model';
+import { FindOptions } from 'sequelize';
 
 /**
  * @export
@@ -32,4 +33,8 @@ export interface IUserService {
    * @memberof IUserService
    */
   remove(id: number): Promise<User>;
+}
+
+export interface UserFindOptions extends FindOptions {
+  attributes: { exclude: string[] };
 }

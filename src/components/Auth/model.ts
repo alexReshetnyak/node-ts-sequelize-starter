@@ -1,6 +1,5 @@
 import { sequelize } from '../../config/connection/connection';
 import { Model, DataTypes } from 'sequelize';
-import { User } from '../User/model';
 
 /**
  * @export
@@ -42,9 +41,9 @@ export { Token };
  */
 class Token extends Model {
   public id: number;
-  public user_id: string;
   public token_id: string;
-
+  
+  public readonly user_id: string;
   public readonly created_at: Date;
   public readonly updated_at: Date;
 }
@@ -55,17 +54,11 @@ Token.init({
     autoIncrement: true,
     primaryKey: true,
   },
-  user_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
   token_id: {
     type: DataTypes.UUID,
     allowNull: false,
   },
 }, {
-  tableName: 'tokens',
   sequelize,
+  tableName: 'tokens',
 });
-
-Token.belongsTo(User);
